@@ -73,6 +73,28 @@ game_center/
 └── highscores.json      # Score tracking (future implementation)
 ```
 
+## 🛠 Challenges & Solutions
+
+### 1. Terminal to Web Conversion
+**Problem**: Initially, both games were terminal-based, which limited accessibility and user experience.
+**Solution**: Rewrote both games using HTML5, CSS3, and vanilla JavaScript to create interactive web interfaces while maintaining the core game logic.
+
+### 2. Hangman ASCII Art Display
+**Problem**: The hangman's ASCII art wasn't displaying correctly in the browser due to formatting issues with multi-line strings in JavaScript.
+**Solution**: Restructured the hangman stages as an array of strings with proper line breaks and used template literals for better readability and maintenance.
+
+### 3. Keyboard Input Handling
+**Problem**: The games needed to support both mouse clicks and keyboard input for better accessibility.
+**Solution**: Implemented comprehensive event listeners for both keyboard and mouse events, with visual feedback for keyboard interactions.
+
+### 4. Game State Management
+**Problem**: Managing game state between browser refreshes was challenging.
+**Solution**: Implemented client-side game state management using JavaScript variables and ensured all game state is reset properly when starting a new game.
+
+### 5. Cross-browser Compatibility
+**Problem**: Some JavaScript features worked differently across browsers.
+**Solution**: Used standard JavaScript practices and tested on multiple browsers to ensure consistent behavior.
+
 ## 🔧 Future Improvements
 
 - Add user authentication
