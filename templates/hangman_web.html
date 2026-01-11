@@ -213,14 +213,30 @@
             }
         }
 
+        // Track if a guess is currently being processed
+        let isProcessingGuess = false;
+
         // Handle letter guess
         function makeGuess(letter) {
-            if (gameOver || guessedLetters.includes(letter)) return;
+            // Prevent multiple rapid clicks and invalid states
+            if (gameOver || guessedLetters.includes(letter) || isProcessingGuess) {
+                return;
+            }
             
-            // Add to guessed letters
-            if (!guessedLetters.includes(letter)) {
+            // Lock the guess processing
+            isProcessingGuess = true;
+            
+            try {
+                // Add to guessed letters
                 guessedLetters.push(letter);
                 updateGuessedLetters();
+                
+                // Update the button state immediately for better UX
+                const button = document.querySelector(`.letter-btn[data-letter="${letter}"]`);
+                if (button) {
+                    button.disabled = true;
+                    button.style.backgroundColor = currentWord.includes(letter) ? '#4CAF50' : '#f44336';
+                }
                 
                 // Check if letter is in the word
                 if (!currentWord.includes(letter)) {
@@ -234,14 +250,21 @@
                     }
                 }
                 
-                // Check for win
+                // Update the word display with the new guess
+                updateWordDisplay();
+                
+                // Check for win after updating the display
                 if (isWordGuessed()) {
                     endGame(true);
                     return;
                 }
-                
-                updateWordDisplay();
+            } finally {
+                // Always unlock the guess processing, even if there was an error
+                isProcessingGuess = false;
             }
+            
+            // Force a reflow to ensure UI updates are processed
+            void hangmanDisplay.offsetHeight;
         }
 
         // Check if the entire word has been guessed
@@ -321,35 +344,30 @@
             });
             
             // Add keyboard support
-            document.addEventListener('keydown', (e) => {
-                // Prevent default for letter keys to avoid any unwanted behavior
-                if (/^[a-z]$/i.test(e.key)) {
-                    e.preventDefault();
-                }
+        function handleKeyDown(e) {
+            // Prevent default for letter keys to avoid any unwanted behavior
+            if (/^[a-z]$/i.test(e.key)) {
+                e.preventDefault();
                 
-                // Handle Enter key to start a new game when game is over
-                if (gameOver && e.key === 'Enter') {
-                    initGame();
-                    return;
-                }
-                
-                // Only process letter keys if game is not over
-                if (!gameOver) {
+                // Only process if not already processing a guess
+                if (!isProcessingGuess) {
                     const key = e.key.toLowerCase();
-                    if (/^[a-z]$/.test(key) && !guessedLetters.includes(key)) {
+                    if (!gameOver && /^[a-z]$/.test(key) && !guessedLetters.includes(key)) {
                         makeGuess(key);
-                        // Update the button state
-                        const button = document.querySelector(`.letter-btn[data-letter="${key}"]`);
-                        if (button) {
-                            button.disabled = true;
-                            button.style.backgroundColor = currentWord.includes(key) ? '#4CAF50' : '#f44336';
-                            // Add visual feedback for keyboard users
-                            button.classList.add('keyboard-active');
-                            setTimeout(() => button.classList.remove('keyboard-active'), 150);
-                        }
                     }
                 }
-            });
+                return;
+            }
+            
+            // Handle Enter key to start a new game when game is over
+            if (e.key === 'Enter' && gameOver) {
+                initGame();
+                return;
+            }
+        }
+        
+        // Add the keyboard event listener
+        document.addEventListener('keydown', handleKeyDown);
             
             // Focus the game container to ensure keyboard events are captured
             document.getElementById('game-container').setAttribute('tabindex', '0');
